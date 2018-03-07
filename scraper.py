@@ -1,6 +1,8 @@
 import requests
 from lxml import html
 
+'''
+
 session = requests.Session()
 session.auth = ('user', 'password')
 calendar_url = 'http://studia.elka.pw.edu.pl/cal/'
@@ -32,3 +34,39 @@ for x in range(0, len(my_subjects)):
     print(str(x+1) + '.', end = ' ')
     print("[%s]" % (my_subjects[x][0]), end = ' ')
     print(my_subjects[x][1])
+    
+'''
+
+
+def read_session_data():
+    with open('data.conf') as file:
+        content = file.read().splitlines()
+    details = {
+        'username': content[0],
+        'password': content[1],
+        'subject':  content[2],
+        'cell':     content[3]
+    }
+    return details
+
+
+def get_individual_page_url(session):
+    calendar_url = 'http://studia.elka.pw.edu.pl/cal/'
+    result = session.get(calendar_url)
+    tree = html.fromstring(result.content)
+    semester = tree.xpath("//*[contains(text(),'Semestr')]/text()")
+    temp = semester[0].split(' ')
+    semester_number = temp[1]
+    url = 'https://studia.elka.pw.edu.pl/en/' + semester_number + '/'
+    return url
+
+
+def main():
+    session_details = read_session_data()
+    session = requests.Session()
+    session.auth = (session_details['username'], session_details['password'])
+    main_page_url = get_individual_page_url(session)
+
+
+if __name__ == "__main__":
+    main()
