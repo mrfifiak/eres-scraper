@@ -61,11 +61,32 @@ def get_individual_page_url(session):
     return url
 
 
+def validate_subject_entry(session, subject, url):
+    result = session.get(url)
+    tree = html.fromstring(result.content)
+    individual_page = tree.xpath("//tr//th[@class='nagl']/text()")
+    subjects = extract_subjects(individual_page)
+    for s in subjects:
+        if subject == s:
+            return True
+    return False
+
+
+def extract_subjects(page):
+    subjects = []
+    for x in range(35, len(page) - 1, 2):
+        subject_code = page[x]
+        subjects.append(subject_code)
+    return subjects
+
+
 def main():
     session_details = read_session_data()
     session = requests.Session()
     session.auth = (session_details['username'], session_details['password'])
     main_page_url = get_individual_page_url(session)
+    if not validate_subject_entry(session, session_details['subject'], main_page_url):
+        return
 
 
 if __name__ == "__main__":
