@@ -68,6 +68,7 @@ def validate_subject_entry(session, subject, url):
     subjects = extract_subjects(individual_page)
     for s in subjects:
         if subject == s:
+            print("FOUND")
             return True
     return False
 
