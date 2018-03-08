@@ -1,45 +1,14 @@
 import requests
+import string
+import time
 from lxml import html
 
-'''
 
-session = requests.Session()
-session.auth = ('user', 'password')
-calendar_url = 'http://studia.elka.pw.edu.pl/cal/'
-
-result = session.get(calendar_url)
-calendar_tree = html.fromstring(result.content)
-semester = calendar_tree.xpath("//*[contains(text(),'Semestr')]/text()")
-temp = semester[0].split(' ')
-semester_number = temp[1]
-
-main_page_url = 'https://studia.elka.pw.edu.pl/en/' + semester_number + '/'
-result = session.get(main_page_url)
-main_page_tree = html.fromstring(result.content)
-individual_page = main_page_tree.xpath("//tr//th[@class='nagl']/text()")
-
-length = len(individual_page) - 1
-
-my_subjects = []
-
-for x in range (35,length,2):
-    subject_code = individual_page[x]
-    subject_name = individual_page[x+1][:-1]
-    subject_data = (subject_code, subject_name)
-    my_subjects.append(subject_data)
-
-print("Courses you attend: ")
-
-for x in range(0, len(my_subjects)):
-    print(str(x+1) + '.', end = ' ')
-    print("[%s]" % (my_subjects[x][0]), end = ' ')
-    print(my_subjects[x][1])
-    
-'''
+# TODO: SEND AND EMAIL ON UPDATE
 
 
 def read_session_data():
-    with open('data.conf') as file:
+    with open('data.conf', 'r') as file:
         content = file.read().splitlines()
     details = {
         'username': content[0],
@@ -55,6 +24,7 @@ def get_individual_page_url(session):
     result = session.get(calendar_url)
     tree = html.fromstring(result.content)
     semester = tree.xpath("//*[contains(text(),'Semestr')]/text()")
+    print(semester)
     temp = semester[0].split(' ')
     semester_number = temp[1]
     url = 'https://studia.elka.pw.edu.pl/en/' + semester_number + '/'
@@ -68,7 +38,6 @@ def validate_subject_entry(session, subject, url):
     subjects = extract_subjects(individual_page)
     for s in subjects:
         if subject == s:
-            print("FOUND")
             return True
     return False
 
@@ -81,6 +50,34 @@ def extract_subjects(page):
     return subjects
 
 
+def get_subject_page_url(subject, url):
+    return url + subject + '/info'
+
+
+def get_row_to_listen(session, url, cell):
+    result = session.get(url)
+    tree = html.fromstring(result.content)
+    row = tree.xpath("//table[2]//tr[td//text()[contains(., '%s')]][1]//text()" % cell)
+    return row
+
+
+def cut_spaces_and_nonprintables(row, cell):
+    for index, item in enumerate(row):
+        if item == cell:
+            for i in range(2,9,2):
+                row[index + i] = ''.join([x for x in row[index + i] if x in string.printable])
+                row[index + i] = row[index + i][:-4]
+    print(row)
+
+def has_been_updated(row, cell):
+    for index, item in enumerate(row):
+        if item == cell:
+            for i in range(4, 9, 2):
+                if row[index + i] != '':
+                    return True
+    return False
+
+
 def main():
     session_details = read_session_data()
     session = requests.Session()
@@ -88,6 +85,20 @@ def main():
     main_page_url = get_individual_page_url(session)
     if not validate_subject_entry(session, session_details['subject'], main_page_url):
         return
+    while True:
+        subject_page_url = get_subject_page_url(session_details['subject'], main_page_url)
+        #subject_page_url = 'https://studia.elka.pw.edu.pl/en/17Z/ECIRS.A/info/'
+        print(subject_page_url)
+        row_to_listen = get_row_to_listen(session, subject_page_url, session_details['cell'])
+        print(row_to_listen)
+        cut_spaces_and_nonprintables(row_to_listen, session_details['cell'])
+        if has_been_updated(row_to_listen, session_details['cell']):
+            break
+        else:
+            time.sleep(60)
+            continue
+    print("Cell '%s' in ERES system has been updated!" % session_details['cell'])
+
 
 
 if __name__ == "__main__":
