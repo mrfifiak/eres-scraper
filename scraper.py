@@ -30,7 +30,7 @@ class Scraper:
         self.subjects = []
         for s in subjects:
             for child in s:
-                if re.match("[A-Z]+[-]*[1-9]*.[A-B]", str(child.text)):
+                if re.match("[A-Z]+[-]*[1-9]*[A-Z]*.[A-B]", str(child.text)):
                     self.subjects.append(child.text)
         print(self.subjects)
 
