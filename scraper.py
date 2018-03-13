@@ -10,6 +10,10 @@ class Scraper:
     def __init__(self):
         self.main_page_url = "https://studia.elka.pw.edu.pl/en/"
         self.session = requests.Session()
+        self.marks_page_url = None
+        self.response = None
+        self.subjects = None
+        self.subject_to_track = None
 
     def get_login_credentials(self):
         self.session.auth = (input("username: "), getpass.getpass("password: "))
@@ -32,8 +36,25 @@ class Scraper:
             for child in s:
                 if re.match("[A-Z]+[-]*[1-9]*[A-Z]*.[A-B]", str(child.text)):
                     self.subjects.append(child.text)
-        print(self.subjects)
 
+    def get_subject_to_track(self):
+        while True:
+            print(self.subjects)
+            subject = input("Enter subject code: ")
+            for s in self.subjects:
+                if s == subject:
+                    self.subject_to_track = subject
+                    break
+            if self.subject_to_track is not None:
+                break
+            else:
+                print("Wrong subject code.")
+                continue
+        self.get_marks_page()
+
+    def get_marks_page(self):
+        print(self.response.url)
+        self.marks_page_url = self.response.url + self.subject_to_track + "/info"
 
 
 '''
@@ -131,10 +152,12 @@ def main():
     print("Cell '%s' in ERES system has been updated!" % session_details['cell'])
 '''
 
+
 def main():
     scraper = Scraper()
     scraper.login()
     scraper.get_individual_subjects()
+    scraper.get_subject_to_track()
 
 
 if __name__ == "__main__":
