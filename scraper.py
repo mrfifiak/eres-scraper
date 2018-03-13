@@ -2,11 +2,41 @@ import requests
 import string
 import time
 from lxml import html
+import getpass
+import re
 
 
-# TODO: SEND AND EMAIL ON UPDATE
+class Scraper:
+    def __init__(self):
+        self.main_page_url = "https://studia.elka.pw.edu.pl/en/"
+        self.session = requests.Session()
+
+    def get_login_credentials(self):
+        self.session.auth = (input("username: "), getpass.getpass("password: "))
+
+    def login(self):
+        while True:
+            self.get_login_credentials()
+            self.response = self.session.get(self.main_page_url)
+            if self.response.status_code == 401:  # HTTP 401 Client Error: Unauthorized
+                print("Wrong username and/or password.")
+                continue
+            else:
+                break
+
+    def get_individual_subjects(self):
+        subjects_tree = html.fromstring(self.response.content)
+        subjects = subjects_tree.xpath("//tr[th[@class='nagl'] and th[@class='zaw0']]")
+        self.subjects = []
+        for s in subjects:
+            for child in s:
+                if re.match("[A-Z]+[-]*[1-9]*.[A-B]", str(child.text)):
+                    self.subjects.append(child.text)
+        print(self.subjects)
 
 
+
+'''
 def read_session_data():
     with open('data.conf', 'r') as file:
         content = file.read().splitlines()
@@ -69,6 +99,7 @@ def cut_spaces_and_nonprintables(row, cell):
                 row[index + i] = row[index + i][:-4]
     print(row)
 
+
 def has_been_updated(row, cell):
     for index, item in enumerate(row):
         if item == cell:
@@ -98,7 +129,12 @@ def main():
             time.sleep(60)
             continue
     print("Cell '%s' in ERES system has been updated!" % session_details['cell'])
+'''
 
+def main():
+    scraper = Scraper()
+    scraper.login()
+    scraper.get_individual_subjects()
 
 
 if __name__ == "__main__":
