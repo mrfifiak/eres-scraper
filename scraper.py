@@ -1,19 +1,22 @@
 import requests
-import string
 import time
 from lxml import html
 import getpass
 import re
+import copy
 
 
 class Scraper:
     def __init__(self):
         self.main_page_url = "https://studia.elka.pw.edu.pl/en/"
+        self.individual_page_url = None
         self.session = requests.Session()
         self.marks_page_url = None
         self.response = None
         self.subjects = None
         self.subject_to_track = None
+        self.cell_to_track = None
+        self.row_to_track = None
 
     def get_login_credentials(self):
         self.session.auth = (input("username: "), getpass.getpass("password: "))
@@ -26,6 +29,7 @@ class Scraper:
                 print("Wrong username and/or password.")
                 continue
             else:
+                self.individual_page_url = self.response.url
                 break
 
     def get_individual_subjects(self):
@@ -39,6 +43,7 @@ class Scraper:
 
     def get_subject_to_track(self):
         while True:
+            self.subject_to_track = None
             print(self.subjects)
             subject = input("Enter subject code: ")
             for s in self.subjects:
@@ -50,11 +55,83 @@ class Scraper:
             else:
                 print("Wrong subject code.")
                 continue
-        self.get_marks_page()
+        self.get_marks_page_url()
 
-    def get_marks_page(self):
-        print(self.response.url)
-        self.marks_page_url = self.response.url + self.subject_to_track + "/info"
+    def get_marks_page_url(self):
+        self.marks_page_url = self.individual_page_url + self.subject_to_track + "/info"
+        self.get_cell_to_track()
+
+    def get_cell_to_track(self):
+        self.cell_to_track = input("Enter cell name to track: ")
+        self.get_row_containing_cell()
+
+    def get_row_containing_cell(self):
+        # test case:
+
+        '''
+        marks_test = []
+        self.response = self.session.get("https://studia.elka.pw.edu.pl/en/17Z/ECIRS.A/info/")
+        marks_tree = html.fromstring(self.response.content)
+        marks = marks_tree.xpath("//tr[td[contains(text(), 'Activity')]]")
+        print(marks)
+        for m in marks:
+            print(m.text_content())
+        for m in marks:
+            for child in m:
+                marks_test.append(child.text)
+        print(marks_test)
+        '''
+
+        self.response = self.session.get(self.marks_page_url)
+        marks_tree = html.fromstring(self.response.content)
+        marks = marks_tree.xpath("//tr[td[contains(text(), '%s')]]" % self.cell_to_track)
+        if not marks:
+            print("%s not found in %s page. Redirecting to subject code choice."
+                  % (self.cell_to_track, self.subject_to_track))
+            self.get_subject_to_track()
+        element = copy.deepcopy(marks)
+        self.row_to_track = self.prettify_element(element)
+
+
+        '''
+        marks_row = []
+        for child in marks[0]:
+            marks_row.append(child.text)
+        print(marks_row)
+        self.row_to_track = self.refactor_obtained_row(marks_row)
+        print(self.row_to_track)
+        '''
+        '''
+        for mark in marks:
+            print(mark.text)
+            for child in mark:
+                print(child.text)
+        '''
+
+    def prettify_element(self, element):
+        row = self.extract_element_content(element)
+        return row
+
+    def extract_element_content(self, element):
+        row = []
+        print(type(element))
+        for child in element[0]:
+            print(child.text)
+            row.append(copy.deepcopy(child.text))
+        print(row)
+        return row
+
+    def remove_predecessors(self, row):
+        for r in row:
+            if r == self.cell_to_track:
+                index = row.index(r)
+                break
+        row = row[index:len(row)-1]
+        return row
+
+
+
+
 
 
 '''
