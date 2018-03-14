@@ -4,6 +4,7 @@ from lxml import html
 import getpass
 import re
 import copy
+import sys
 
 
 class Scraper:
@@ -66,57 +67,26 @@ class Scraper:
         self.get_row_containing_cell()
 
     def get_row_containing_cell(self):
-        # test case:
-
-        '''
-        marks_test = []
-        self.response = self.session.get("https://studia.elka.pw.edu.pl/en/17Z/ECIRS.A/info/")
-        marks_tree = html.fromstring(self.response.content)
-        marks = marks_tree.xpath("//tr[td[contains(text(), 'Activity')]]")
-        print(marks)
-        for m in marks:
-            print(m.text_content())
-        for m in marks:
-            for child in m:
-                marks_test.append(child.text)
-        print(marks_test)
-        '''
-
         self.response = self.session.get(self.marks_page_url)
         marks_tree = html.fromstring(self.response.content)
         marks = marks_tree.xpath("//tr[td[contains(text(), '%s')]]" % self.cell_to_track)
         if not marks:
-            print("%s not found in %s page. Redirecting to subject code choice."
+            print("%s not found in %s page. Terminating."
                   % (self.cell_to_track, self.subject_to_track))
-            self.get_subject_to_track()
-        element = copy.deepcopy(marks)
-        self.row_to_track = self.prettify_element(element)
-
-
-        '''
-        marks_row = []
-        for child in marks[0]:
-            marks_row.append(child.text)
-        print(marks_row)
-        self.row_to_track = self.refactor_obtained_row(marks_row)
-        print(self.row_to_track)
-        '''
-        '''
-        for mark in marks:
-            print(mark.text)
-            for child in mark:
-                print(child.text)
-        '''
+            sys.exit()
+        else:
+            self.row_to_track = self.prettify_element(marks)
 
     def prettify_element(self, element):
         row = self.extract_element_content(element)
+        row = self.remove_predecessors(row)
         return row
 
     def extract_element_content(self, element):
         row = []
-        print(type(element))
+        print(element)
+        sys.stdout.flush()
         for child in element[0]:
-            print(child.text)
             row.append(copy.deepcopy(child.text))
         print(row)
         return row
@@ -127,6 +97,7 @@ class Scraper:
                 index = row.index(r)
                 break
         row = row[index:len(row)-1]
+        print(row)
         return row
 
 
