@@ -1,10 +1,10 @@
 import requests
-import time
 from lxml import html
 import getpass
 import re
 import copy
 import sys
+import unicodedata
 
 
 class Scraper:
@@ -76,19 +76,19 @@ class Scraper:
             sys.exit()
         else:
             self.row_to_track = self.prettify_element(marks)
+            print(self.row_to_track)
 
     def prettify_element(self, element):
         row = self.extract_element_content(element)
         row = self.remove_predecessors(row)
+        row = self.remove_non_alphanumerics(row)
         return row
 
     def extract_element_content(self, element):
         row = []
-        print(element)
         sys.stdout.flush()
         for child in element[0]:
             row.append(copy.deepcopy(child.text))
-        print(row)
         return row
 
     def remove_predecessors(self, row):
@@ -97,9 +97,17 @@ class Scraper:
                 index = row.index(r)
                 break
         row = row[index:len(row)-1]
-        print(row)
         return row
 
+    def remove_non_alphanumerics(self, row):
+        alphanumerical_row = []
+        print(row)
+        for r in row:
+            temp = r.replace(u'\xa0', u'')
+            new_cell = temp.replace(u' ', u'')
+            alphanumerical_row.append(new_cell)
+        print(alphanumerical_row)
+        return alphanumerical_row
 
 
 
