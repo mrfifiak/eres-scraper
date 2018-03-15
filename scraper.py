@@ -66,6 +66,8 @@ class Scraper:
         self.cell_to_track = input("Enter cell name to track: ")
         self.get_row_containing_cell()
 
+    # part of loop below
+
     def get_row_containing_cell(self):
         self.response = self.session.get(self.marks_page_url)
         marks_tree = html.fromstring(self.response.content)
@@ -86,9 +88,8 @@ class Scraper:
 
     def extract_element_content(self, element):
         row = []
-        sys.stdout.flush()
         for child in element[0]:
-            row.append(copy.deepcopy(child.text))
+            row.append(child.text)
         return row
 
     def remove_predecessors(self, row):
