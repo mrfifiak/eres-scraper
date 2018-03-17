@@ -2,9 +2,7 @@ import requests
 from lxml import html
 import getpass
 import re
-import copy
 import sys
-import unicodedata
 from observer import Publisher, Subscriber
 
 
