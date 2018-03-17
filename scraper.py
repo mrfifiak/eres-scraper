@@ -5,10 +5,12 @@ import re
 import copy
 import sys
 import unicodedata
+from observer import Publisher, Subscriber
 
 
-class Scraper:
+class Scraper(Publisher):
     def __init__(self):
+        super().__init__()
         self.main_page_url = "https://studia.elka.pw.edu.pl/en/"
         self.individual_page_url = None
         self.session = requests.Session()
@@ -116,7 +118,7 @@ class Scraper:
     def scrap(self):
         while True:
             self.get_row_containing_cell()
-            
+
 
 def main():
     scraper = Scraper()
