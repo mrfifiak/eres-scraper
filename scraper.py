@@ -97,7 +97,7 @@ class Scraper(Publisher):
             if r == self.cell_to_track:
                 index = row.index(r)
                 break
-        row = row[index:len(row)-1]
+        row = row[index:len(row)]
         return row
 
     def remove_non_alphanumerics(self, row):
@@ -132,12 +132,26 @@ class Scraper(Publisher):
                 print("There were on update in ERES system. Next check in 10 seconds.")
                 time.sleep(10)
                 continue
+        payload = self.prepare_payload()
+        super().dispatch(payload)
+        super().unregister("mailer")
 
     def check_update(self):
         for i in range(1, len(self.row_to_track)):
             if self.row_to_track[i] != "":
                 return True
-        return 
+        return
+
+    def prepare_payload(self):
+        payload = {'subject':           self.subject_to_track,
+                   'cell':              self.cell_to_track,
+                   'personal_score':    self.row_to_track[1],
+                   'min_score':         self.row_to_track[2],
+                   'avg_score':         self.row_to_track[3],
+                   'max_score':         self.row_to_track[4],
+                   'no_of_marks':       self.row_to_track[5]
+                   }
+        return payload
 
 
 def main():
