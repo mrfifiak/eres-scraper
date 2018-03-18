@@ -3,7 +3,9 @@ from lxml import html
 import getpass
 import re
 import sys
-from observer import Publisher, Subscriber
+import time
+from observer import Publisher
+from mailer import Mailer
 
 
 class Scraper(Publisher):
@@ -113,9 +115,29 @@ class Scraper(Publisher):
         self.get_individual_subjects()
         self.get_subject_to_track()
 
+        from_addr = input("Enter email address to send update message FROM [GMAIL SUPPORT ONLY]: ")
+        to_addr = input("Enter email address to send update message TO: ")
+        password = getpass.getpass("password: ")
+
+        mailer = Mailer("mailer", from_addr, to_addr, password)
+        super().register(mailer.name)
+
     def scrap(self):
         while True:
             self.get_row_containing_cell()
+            updated = self.check_update()
+            if updated:
+                break
+            else:
+                print("There were on update in ERES system. Next check in 10 seconds.")
+                time.sleep(10)
+                continue
+
+    def check_update(self):
+        for i in range(1, len(self.row_to_track)):
+            if self.row_to_track[i] != "":
+                return True
+        return 
 
 
 def main():
