@@ -120,13 +120,13 @@ class Scraper(Publisher):
         password = getpass.getpass("password: ")
 
         mailer = Mailer("mailer", from_addr, to_addr, password)
-        super().register(mailer.name)
+        super().register(mailer)
 
     def scrap(self):
         while True:
             self.get_row_containing_cell()
             updated = self.check_update()
-            if updated:
+            if not updated:
                 break
             else:
                 print("There were on update in ERES system. Next check in 10 seconds.")
@@ -149,7 +149,7 @@ class Scraper(Publisher):
                    'min_score':         self.row_to_track[2],
                    'avg_score':         self.row_to_track[3],
                    'max_score':         self.row_to_track[4],
-                   'no_of_marks':       self.row_to_track[5]
+                   'no_of_marks':       self.row_to_track[5],
                    }
         return payload
 
