@@ -126,7 +126,7 @@ class Scraper(Publisher):
         while True:
             self.get_row_containing_cell()
             updated = self.check_update()
-            if not updated:
+            if updated:
                 break
             else:
                 print("There were on update in ERES system. Next check in 10 seconds.")
