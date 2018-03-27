@@ -82,7 +82,7 @@ class Scraper(Publisher):
 
     def prettify_element(self, element):
         row = self.extract_element_content(element)
-        row = self.remove_predecessors(row)
+        row = self.remove_predecessors(row) # <--- tu sie wypierdala
         row = self.remove_non_alphanumerics(row)
         return row
 
@@ -95,7 +95,7 @@ class Scraper(Publisher):
     def remove_predecessors(self, row):
         index = 0
         for r in row:
-            if r == self.cell_to_track:
+            if self.cell_to_track in r:
                 index = row.index(r)
                 break
         row = row[index:len(row)]
