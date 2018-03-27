@@ -66,6 +66,11 @@ class Scraper(Publisher):
 
     def get_cell_to_track(self):
         self.cell_to_track = input("Enter cell name to track: ")
+        self.response = self.session.get(self.marks_page_url)
+        marks_tree = html.fromstring(self.response.content)
+        marks = marks_tree.xpath("//tr[td[contains(text(), '%s')]]" % self.cell_to_track)
+        if not marks:
+            self.get_cell_to_track() 
 
     # part of loop below
 
@@ -82,7 +87,7 @@ class Scraper(Publisher):
 
     def prettify_element(self, element):
         row = self.extract_element_content(element)
-        row = self.remove_predecessors(row) # <--- tu sie wypierdala
+        row = self.remove_predecessors(row)
         row = self.remove_non_alphanumerics(row)
         return row
 
