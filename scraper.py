@@ -129,7 +129,7 @@ class Scraper(Publisher):
             if updated:
                 break
             else:
-                print("There were on update in ERES system. Next check in 10 seconds.")
+                print("Nothing new. Next check in 10 seconds.")
                 time.sleep(10)
                 continue
         payload = self.prepare_payload()
