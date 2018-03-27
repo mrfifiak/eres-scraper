@@ -130,8 +130,8 @@ class Scraper(Publisher):
             if updated:
                 break
             else:
-                print("Nothing new. Next check in 10 seconds.")
-                time.sleep(10)
+                print("Nothing new. Next check in 120 seconds.")
+                time.sleep(120)
                 continue
         payload = self.prepare_payload()
         super().dispatch(payload)
