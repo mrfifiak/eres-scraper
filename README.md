@@ -1,2 +1,2 @@
 # eres-scraper
-Simple script which scrapes ERES looking for score updates.
+Simple web script which scrapes Studia server looking for score updates. 
