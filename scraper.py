@@ -93,6 +93,7 @@ class Scraper(Publisher):
         return row
 
     def remove_predecessors(self, row):
+        index = 0
         for r in row:
             if r == self.cell_to_track:
                 index = row.index(r)
